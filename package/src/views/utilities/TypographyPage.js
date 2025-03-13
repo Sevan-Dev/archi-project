@@ -46,12 +46,12 @@ const TypographyPage = () => {
       <TableContainer component={Paper} sx={{ marginTop: 2 }}>
         <Table>
           <TableHead>
-            <TableRow>
-              <TableCell>Montant</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Catégorie</TableCell>
+            <TableRow sx={{ backgroundColor: '#5d87ff' }}> 
+            <TableCell sx={{ color: 'white' }}>Montant</TableCell>
+              <TableCell sx={{ color: 'white' }}>Type</TableCell>
+              <TableCell sx={{ color: 'white' }}>Date</TableCell>
+              <TableCell sx={{ color: 'white' }}>Description</TableCell>
+              <TableCell sx={{ color: 'white' }}>Catégorie</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
