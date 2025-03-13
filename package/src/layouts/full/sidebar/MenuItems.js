@@ -1,8 +1,7 @@
-
 import { uniqueId } from 'lodash';
-
+import PaidIcon from '@mui/icons-material/Paid'; 
 import {
-  IconCopy, IconLayoutDashboard, IconMoodHappy, IconTypography,
+  IconCopy, IconLayoutDashboard, IconMoodHappy,
   IconAward,
   IconBoxMultiple,
   IconPoint,
@@ -62,7 +61,6 @@ import {
   IconLock,
 } from '@tabler/icons-react';
 
-
 const Menuitems = [
   {
     navlabel: true,
@@ -81,9 +79,9 @@ const Menuitems = [
   },
   {
     id: uniqueId(),
-    title: 'Typography',
-    icon: IconTypography,
-    href: '/ui/typography',
+    title: 'Transactions',
+    icon: PaidIcon, 
+    href: '/ui/transactions',
   },
   {
     id: uniqueId(),
