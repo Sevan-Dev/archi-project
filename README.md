@@ -46,4 +46,4 @@ L'objectif de ce projet est de développer une application qui permet aux utilis
 
 1. Clonez ce repository :  
    ```bash
-   git clone https://github.com/Sevan-Dev/archi-log.git
+   git clone https://github.com/Sevan-Dev/archi-project.git
