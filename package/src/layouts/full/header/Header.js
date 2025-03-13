@@ -43,23 +43,12 @@ const Header = (props) => {
         </IconButton>
 
         <Box>
-          <IconButton
-            size="large"
-            aria-label="show 11 new notifications"
-            color="inherit"
-            aria-controls="notification-menu"
-          >
-            <Badge variant="dot" color="primary">
-              <IconBellRinging size="21" stroke="1.5" />
-            </Badge>
-          </IconButton>
+
 
         </Box>
         <Box flexGrow={1} />
         <Stack spacing={1} direction="row" alignItems="center">
-          <Button variant="contained" color="primary" target="_blank" href="https://adminmart.com/product/modernize-react-mui-dashboard-template/?ref=56">
-            Check Pro Template
-          </Button>
+
           <Profile />
         </Stack>
       </ToolbarStyled>

@@ -1,13 +1,12 @@
 import { useMediaQuery, Box, Drawer } from '@mui/material';
 import SidebarItems from './SidebarItems';
-import { Upgrade } from './Updrade';
 import { Sidebar, Logo } from 'react-mui-sidebar';
 import logo from '../../../assets/images/logos/dark1-logo.svg'
 
 const MSidebar = (props) => {
 
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up("lg"));
-  const sidebarWidth = '270px';
+  const sidebarWidth = '270pxf';
 
   // Custom CSS for short scrollbar
   const scrollbarStyles = {
@@ -70,7 +69,6 @@ const MSidebar = (props) => {
                 {/* Sidebar Items */}
                 {/* ------------------------------------------- */}
                 <SidebarItems />
-              <Upgrade />
               <Box sx={{padding:5}}></Box>
               </Box>
             </Sidebar >
@@ -114,7 +112,6 @@ const MSidebar = (props) => {
         {/* Sidebar For Mobile */}
         {/* ------------------------------------------- */}
         <SidebarItems />
-        <Upgrade />
       </Sidebar>
     </Drawer>
   );
