@@ -1,12 +1,13 @@
 // import { useState } from 'react'
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
-import './App.css'
+import './App.css';
 
 import { CssBaseline, ThemeProvider } from '@mui/material';
-
 import { baselightTheme } from "./theme/DefaultColors";
-import { RouterProvider } from 'react-router';
+
+// ✅ Import correct depuis 'react-router-dom'
+import { RouterProvider } from 'react-router-dom';
 import router from "./routes/Router.js"
 
 function App() {
@@ -15,9 +16,9 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <RouterProvider router={router} />
+      <RouterProvider router={router} /> {}
     </ThemeProvider>
   );
 }
 
-export default App
+export default App;
