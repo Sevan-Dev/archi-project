@@ -34,6 +34,7 @@ const AuthLogin = ({ title, subtitle, subtext }) => {
         if (status === "success") {
             navigate('/dashboard');
         } else {
+            
             setErrorMessage("Erreur de connexion : Email ou mot de passe incorrect.");
         }
     };
@@ -95,8 +96,8 @@ const AuthLogin = ({ title, subtitle, subtext }) => {
                 </Stack>
 
                 {errorMessage && (
-                    <Stack alignItems="center" my={1}>
-                    <Typography color="error" textAlign="center">
+                    <Stack alignItems="center" my={2}>
+                    <Typography color="#ff3333" textAlign="center">
                         {errorMessage}
                     </Typography>
                     </Stack>
