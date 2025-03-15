@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Typography,
@@ -8,8 +8,7 @@ import {
     Stack,
     Checkbox
 } from '@mui/material';
-import { Link, Routes, Route, useNavigate } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
 import CustomTextField from '../../../components/forms/theme-elements/CustomTextField';
 import { validForm } from '../../../../backend/login';
 
@@ -17,31 +16,43 @@ const AuthLogin = ({ title, subtitle, subtext }) => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+
+    useEffect(() => {
+        // Vérifie si l'utilisateur est déjà connecté
+        const user = localStorage.getItem("user");
+        if (user) {
+            navigate('/dashboard');
+        }
+    }, [navigate]);
 
     const handleLogin = async (event) => {
-        event.preventDefault(); 
+        event.preventDefault();
+        setErrorMessage('');
+
         const status = await validForm(email, password);
         if (status === "success") {
             navigate('/dashboard');
         } else {
-            alert("Erreur de connexion, vérifiez vos identifiants !");
+            setErrorMessage("Erreur de connexion : Email ou mot de passe incorrect.");
         }
     };
 
     return (
         <>
-            {title ? (
+            {title && (
                 <Typography fontWeight="700" variant="h2" mb={1}>
                     {title}
                 </Typography>
-            ) : null}
+            )}
 
             {subtext}
 
-            <Stack component="form" onSubmit={handleLogin}>  {}
+            <Stack component="form" onSubmit={handleLogin}>
                 <Box>
-                    <Typography variant="subtitle1"
-                        fontWeight={600} component="label" htmlFor='email' mb="5px">Email</Typography>
+                    <Typography variant="subtitle1" fontWeight={600} component="label" htmlFor='email' mb="5px">
+                        Email
+                    </Typography>
                     <CustomTextField
                         id="email"
                         variant="outlined"
@@ -51,8 +62,9 @@ const AuthLogin = ({ title, subtitle, subtext }) => {
                     />
                 </Box>
                 <Box mt="25px">
-                    <Typography variant="subtitle1"
-                        fontWeight={600} component="label" htmlFor='password' mb="5px">Mot de passe</Typography>
+                    <Typography variant="subtitle1" fontWeight={600} component="label" htmlFor='password' mb="5px">
+                        Mot de passe
+                    </Typography>
                     <CustomTextField
                         id="password"
                         type="password"
@@ -81,6 +93,15 @@ const AuthLogin = ({ title, subtitle, subtext }) => {
                         Mot de passe oublié ?
                     </Typography>
                 </Stack>
+
+                {errorMessage && (
+                    <Stack alignItems="center" my={1}>
+                    <Typography color="error" textAlign="center">
+                        {errorMessage}
+                    </Typography>
+                    </Stack>
+                )}
+
                 <Box>
                     <Button
                         color="primary"
