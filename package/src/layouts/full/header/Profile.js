@@ -78,18 +78,6 @@ const Profile = () => {
           </ListItemIcon>
           <ListItemText>Mon Profil</ListItemText>
         </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <IconMail width={20} />
-          </ListItemIcon>
-          <ListItemText>Mon Compte</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <IconListCheck width={20} />
-          </ListItemIcon>
-          <ListItemText>Mes Tâches</ListItemText>
-        </MenuItem>
         <Box mt={1} py={1} px={2}>
           <Button variant="outlined" color="primary" fullWidth onClick={handleLogout}>
             Déconnexion

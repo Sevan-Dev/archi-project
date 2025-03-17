@@ -24,3 +24,29 @@ export const addTransaction = async (transaction) => {
         return { status: "error" };
     }
 };
+
+export const updateTransaction = async (transaction) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/index.php?action=updateTransaction`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(transaction),
+        });
+        return await response.json();
+    } catch (error) {
+        console.error("Erreur lors de la modification de la transaction :", error);
+        return { status: "error" };
+    }
+};
+
+export const deleteTransaction = async (id_transaction) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/index.php?action=deleteTransaction&id_transaction=${id_transaction}`, {
+            method: "DELETE",
+        });
+        return await response.json();
+    } catch (error) {
+        console.error("Erreur lors de la suppression de la transaction :", error);
+        return { status: "error" };
+    }
+};
