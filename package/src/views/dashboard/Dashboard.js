@@ -8,7 +8,7 @@ import SalesOverview from './components/SalesOverview';
 import YearlyBreakup from './components/YearlyBreakup';
 import MonthlyEarnings from './components/MonthlyEarnings';
 import ProductPerformance from './components/ProductPerformance';
-
+import PieActiveArc from "./components/PieChartActive.jsx";
 
 
 const Dashboard = () => {
@@ -26,19 +26,18 @@ const Dashboard = () => {
       <Box>
         <Grid container spacing={3}>
           <Grid item xs={12} lg={8}>
-                <SalesOverview/>
+          <PieActiveArc />
           </Grid>
           <Grid item xs={12} lg={4}>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <YearlyBreakup />
-              </Grid>
+
               <Grid item xs={12}>
                 <MonthlyEarnings />
               </Grid>
             </Grid>
           </Grid>
         </Grid>
+              <SalesOverview/>
       </Box>
     </PageContainer>
   );
