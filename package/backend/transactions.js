@@ -1,4 +1,4 @@
-import API_BASE_URL from "./config";
+import API_BASE_URL from "./config.js";
 
 export const getTransactionsByUser = async (id_utilisateur) => {
     try {
@@ -18,7 +18,8 @@ export const addTransaction = async (transaction) => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(transaction),
         });
-        return await response.json();
+        console.log(await response.json());
+        return;
     } catch (error) {
         console.error("Erreur lors de l'ajout de la transaction :", error);
         return { status: "error" };
