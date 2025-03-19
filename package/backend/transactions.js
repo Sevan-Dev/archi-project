@@ -11,27 +11,63 @@ export const getTransactionsByUser = async (id_utilisateur) => {
     }
 };
 
-export const addTransaction = async (transaction) => {
+export const addTransaction = async (id_utilisateur, montant, type, date_transaction, id_categorie, description) => {
     try {
         const response = await fetch(`${API_BASE_URL}/index.php?action=addTransaction`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(transaction),
+            body: JSON.stringify({
+                id_utilisateur, 
+                montant, 
+                type, 
+                date: date_transaction,  // Renommé ici
+                id_categorie, 
+                description
+            }),
         });
-        console.log(await response.json());
-        return;
+
+        // Vérification si la réponse est correcte (code 200)
+        if (!response.ok) {
+            throw new Error(`La requête a échoué avec le statut: ${response.status}`);
+        }
+
+        // Vérification si la réponse contient des données JSON
+        const responseText = await response.text(); // Récupérer la réponse en texte brut
+        if (!responseText) {
+            throw new Error("La réponse du serveur est vide");
+        }
+
+        const data = JSON.parse(responseText); // Parser manuellement si la réponse n'est pas JSON
+
+        if (data.status === 'success') {
+            console.log('Transaction ajoutée avec succès');
+        } else {
+            console.error('Erreur lors de l\'ajout de la transaction:', data.error);
+        }
+        
+        return data;
+
     } catch (error) {
         console.error("Erreur lors de l'ajout de la transaction :", error);
-        return { status: "error" };
+        return { status: "error", message: error.message };
     }
 };
 
-export const updateTransaction = async (transaction) => {
+
+
+export const updateTransaction = async (id_transaction, montant, type, date_transaction, id_categorie, description) => {
     try {
         const response = await fetch(`${API_BASE_URL}/index.php?action=updateTransaction`, {
-            method: "PUT",
+            method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(transaction),
+            body: JSON.stringify({
+                id_transaction, 
+                montant, 
+                type, 
+                date: date_transaction,  // Renommé ici
+                id_categorie, 
+                description
+            }),
         });
         return await response.json();
     } catch (error) {
@@ -43,7 +79,7 @@ export const updateTransaction = async (transaction) => {
 export const deleteTransaction = async (id_transaction) => {
     try {
         const response = await fetch(`${API_BASE_URL}/index.php?action=deleteTransaction&id_transaction=${id_transaction}`, {
-            method: "DELETE",
+            method: "GET",
         });
         return await response.json();
     } catch (error) {
