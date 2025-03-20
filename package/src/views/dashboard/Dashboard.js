@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Grid, Box } from '@mui/material';
 import PageContainer from 'src/components/container/PageContainer';
@@ -10,15 +10,17 @@ import MonthlyEarnings from './components/MonthlyEarnings';
 import ProductPerformance from './components/ProductPerformance';
 import PieActiveArc from "./components/PieChartActive";
 
-
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-      const user = localStorage.getItem("user");
-      if (!user) {
-          navigate("../auth/login");
-      }
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) {
+      navigate("../auth/login");
+    } else {
+      setUserId(user.id);  // On récupère l'ID de l'utilisateur
+    }
   }, [navigate]);
 
   return (
@@ -26,18 +28,17 @@ const Dashboard = () => {
       <Box>
         <Grid container spacing={3}>
           <Grid item xs={12} lg={8}>
-          <PieActiveArc/>
+            {userId && <PieActiveArc id_utilisateur={userId} />} 
           </Grid>
           <Grid item xs={12} lg={4}>
             <Grid container spacing={3}>
-
               <Grid item xs={12}>
                 <MonthlyEarnings />
               </Grid>
             </Grid>
           </Grid>
         </Grid>
-              <SalesOverview/>
+        <SalesOverview />
       </Box>
     </PageContainer>
   );

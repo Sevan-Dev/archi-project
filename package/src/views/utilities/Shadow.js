@@ -1,155 +1,211 @@
-import React, { useState, useEffect } from "react";
-import {
-  Grid,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
-  Typography,
-  Card,
-  CardContent,
-  CircularProgress,
-  Box,
-} from "@mui/material";
-import PageContainer from "src/components/container/PageContainer";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts"; // Utilisation de Recharts pour les graphiques
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, Typography, LinearProgress, Box, Grid, Avatar, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { AttachMoney, CarRepair, FlightTakeoff } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { getObjectifsByUser, addObjectif, deleteObjectif, updateObjectif } from '../../../backend/objectifs'; // Assurez-vous de bien importer
+import { useNavigate } from 'react-router-dom';
 
-const BudgetGoalPage = () => {
-  const [budgets, setBudgets] = useState({});
-  const [goals, setGoals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [budgetAmount, setBudgetAmount] = useState("");
-  const [goalAmount, setGoalAmount] = useState("");
-
-  const categories = ["Alimentation", "Logement", "Loisirs", "Transports", "Autres"]; // Catégories possibles pour les budgets
-
-  useEffect(() => {
-    // Ici, vous pouvez charger les objectifs et budgets existants depuis votre API ou votre base de données.
-    setLoading(false); // Simulation de la fin du chargement
-  }, []);
-
-  const handleSubmitBudget = () => {
-    if (selectedCategory && budgetAmount) {
-      setBudgets((prev) => ({
-        ...prev,
-        [selectedCategory]: budgetAmount,
-      }));
-      setBudgetAmount("");
-      setSelectedCategory("");
-    }
-  };
-
-  const handleSubmitGoal = () => {
-    if (goalAmount) {
-      setGoals((prev) => [...prev, { goal: goalAmount, progress: 0 }]); // Exemple avec un objectif d'épargne sans progression réelle
-      setGoalAmount("");
-    }
-  };
-
-  // Exemple de données pour les graphiques de suivi des budgets
-  const budgetData = [
-    { category: "Alimentation", budget: 300, spent: 200 },
-    { category: "Logement", budget: 1000, spent: 950 },
-    { category: "Loisirs", budget: 200, spent: 150 },
-    { category: "Transports", budget: 100, spent: 80 },
-  ];
+const FinancialGoalCard = ({ goal, onDelete, onEdit }) => {
+  const progress = (goal.montant_actuel / goal.montant_cible) * 100;
 
   return (
-    <PageContainer title="Gestion des Budgets et Objectifs" description="Suivi des budgets et des objectifs d'épargne">
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Typography variant="h5" gutterBottom>
-            Définir un Budget
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
+      <Card sx={{ maxWidth: 345, marginBottom: 2, boxShadow: 3, borderRadius: 2 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+            <Avatar sx={{ backgroundColor: 'primary.main', marginRight: 2 }}>
+              {goal.nom_objectif === 'Vacances été' ? <FlightTakeoff /> : goal.nom_objectif === 'Voiture' ? <CarRepair /> : <AttachMoney />}
+            </Avatar>
+            <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+              {goal.nom_objectif}
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            Actuellement : {goal.montant_actuel}€ | Prix : {goal.montant_cible}€
           </Typography>
-          <FormControl fullWidth>
-            <InputLabel id="category-label">Catégorie</InputLabel>
-            <Select
-              labelId="category-label"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              fullWidth
-            >
-              {categories.map((category) => (
-                <MenuItem key={category} value={category}>
-                  {category}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label="Montant du Budget"
-            type="number"
-            value={budgetAmount}
-            onChange={(e) => setBudgetAmount(e.target.value)}
-            fullWidth
-            sx={{ marginTop: 2 }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmitBudget}
-            sx={{ marginTop: 2 }}
-          >
-            Ajouter un Budget
-          </Button>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Typography variant="h5" gutterBottom>
-            Suivi des Objectifs d'Épargne
+          <Box sx={{ marginTop: 2 }}>
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{
+                height: 12,
+                borderRadius: 5,
+                '& .MuiLinearProgress-bar': {
+                  backgroundColor: progress >= 100 ? 'success.main' : 'primary.main',
+                },
+              }}
+            />
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ marginTop: 1 }}>
+            {Math.round(progress)}% atteint
           </Typography>
-          <TextField
-            label="Montant de l'Objectif"
-            type="number"
-            value={goalAmount}
-            onChange={(e) => setGoalAmount(e.target.value)}
-            fullWidth
-            sx={{ marginBottom: 2 }}
-          />
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={handleSubmitGoal}
-            sx={{ marginBottom: 2 }}
-          >
-            Ajouter un Objectif
-          </Button>
-
-          {goals.map((goal, index) => (
-            <Card key={index} sx={{ marginBottom: 2 }}>
-              <CardContent>
-                <Typography variant="h6">Objectif : {goal.goal} €</Typography>
-                <Typography>Progression : {goal.progress} €</Typography>
-              </CardContent>
-            </Card>
-          ))}
-        </Grid>
-
-        <Grid item xs={12}>
-          <Typography variant="h5" gutterBottom>
-            Suivi des Budgets
-          </Typography>
-          {loading ? (
-            <CircularProgress sx={{ display: "block", margin: "20px auto" }} />
-          ) : (
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={budgetData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="budget" fill="#8884d8" />
-                <Bar dataKey="spent" fill="#82ca9d" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </Grid>
-      </Grid>
-    </PageContainer>
+          <Box sx={{ marginTop: 2 }}>
+            <Button variant="outlined" color="primary" onClick={() => onEdit(goal)}>Modifier</Button>
+            <Button variant="outlined" color="error" onClick={() => onDelete(goal.id_objectif)} sx={{ marginLeft: 1 }}>Supprimer</Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 
-export default BudgetGoalPage;
+const FinancialGoalsPage = () => {
+  const [goals, setGoals] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [formData, setFormData] = useState({
+    nom_objectif: '',
+    montant_cible: '',
+    montant_actuel: 0,
+    date_limite: ''
+  });
+  const [editingGoal, setEditingGoal] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) {
+      navigate("../auth/login");
+    } else {
+      setUserId(user.id);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (userId) {
+      const fetchGoals = async () => {
+        const data = await getObjectifsByUser(userId);
+        setGoals(data);
+      };
+      fetchGoals();
+    }
+  }, [userId]);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleAddGoal = async () => {
+    const result = await addObjectif(userId, formData.nom_objectif, formData.montant_cible, formData.date_limite);
+    if (!result.error) {
+      setOpenDialog(false);
+      setFormData({ nom_objectif: '', montant_cible: '', montant_actuel: 0, date_limite: '' });
+      setGoals(await getObjectifsByUser(userId)); 
+    }
+  };
+
+  const handleEditGoal = async () => {
+    const result = await updateObjectif(editingGoal.id_objectif, formData.nom_objectif, formData.montant_cible, formData.montant_actuel, formData.date_limite);
+    if (!result.error) {
+      setOpenDialog(false);
+      setEditingGoal(null);
+      setFormData({ nom_objectif: '', montant_cible: '', montant_actuel: 0, date_limite: '' });
+      setGoals(await getObjectifsByUser(userId));
+    }
+  };
+
+  const handleDeleteGoal = async (id) => {
+    const result = await deleteObjectif(id);
+    if (!result.error) {
+      setGoals(await getObjectifsByUser(userId));
+    }
+  };
+
+  const openAddDialog = () => {
+    setOpenDialog(true);
+    setEditingGoal(null);
+    setFormData({ nom_objectif: '', montant_cible: '', montant_actuel: 0, date_limite: '' });
+  };
+
+  const openEditDialog = (goal) => {
+    setOpenDialog(true);
+    setEditingGoal(goal);
+    setFormData({
+      nom_objectif: goal.nom_objectif,
+      montant_cible: goal.montant_cible,
+      montant_actuel: goal.montant_actuel,
+      date_limite: goal.date_limite
+    });
+  };
+
+  return (
+    <>
+      <Button variant="contained" color="primary" onClick={openAddDialog} sx={{ marginBottom: 3 }}>
+        Ajouter un objectif
+      </Button>
+      <Grid container spacing={3} sx={{ padding: 3 }}>
+        {goals.map((goal) => (
+          <Grid item xs={12} sm={6} md={4} key={goal.id_objectif}>
+            <FinancialGoalCard
+              goal={goal}
+              onDelete={handleDeleteGoal}
+              onEdit={openEditDialog}
+            />
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Dialog de formulaire */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>{editingGoal ? 'Modifier l\'objectif' : 'Ajouter un objectif'}</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Nom de l'objectif"
+            name="nom_objectif"
+            value={formData.nom_objectif}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Montant cible"
+            name="montant_cible"
+            value={formData.montant_cible}
+            onChange={handleChange}
+            type="number"
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Montant actuel"
+            name="montant_actuel"
+            value={formData.montant_actuel}
+            onChange={handleChange}
+            type="number"
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Date limite"
+            name="date_limite"
+            value={formData.date_limite}
+            onChange={handleChange}
+            type="date"
+            fullWidth
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="primary">
+            Annuler
+          </Button>
+          <Button onClick={editingGoal ? handleEditGoal : handleAddGoal} color="primary">
+            {editingGoal ? 'Modifier' : 'Ajouter'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
+
+export default FinancialGoalsPage;
