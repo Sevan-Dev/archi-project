@@ -11,7 +11,7 @@ export const getTransactionsByUser = async (id_utilisateur) => {
     }
 };
 
-export const addTransaction = async (id_utilisateur, montant, type, date_transaction, id_categorie, description) => {
+export const addTransaction = async (id_utilisateur, montant, date_transaction, id_categorie, description) => {
     try {
         const response = await fetch(`${API_BASE_URL}/index.php?action=addTransaction`, {
             method: "POST",
@@ -19,25 +19,22 @@ export const addTransaction = async (id_utilisateur, montant, type, date_transac
             body: JSON.stringify({
                 id_utilisateur, 
                 montant, 
-                type, 
                 date: date_transaction,  // Renommé ici
                 id_categorie, 
                 description
             }),
         });
 
-        // Vérification si la réponse est correcte (code 200)
         if (!response.ok) {
             throw new Error(`La requête a échoué avec le statut: ${response.status}`);
         }
 
-        // Vérification si la réponse contient des données JSON
-        const responseText = await response.text(); // Récupérer la réponse en texte brut
+        const responseText = await response.text(); 
         if (!responseText) {
             throw new Error("La réponse du serveur est vide");
         }
 
-        const data = JSON.parse(responseText); // Parser manuellement si la réponse n'est pas JSON
+        const data = JSON.parse(responseText);        
 
         if (data.status === 'success') {
             console.log('Transaction ajoutée avec succès');
@@ -55,7 +52,7 @@ export const addTransaction = async (id_utilisateur, montant, type, date_transac
 
 
 
-export const updateTransaction = async (id_transaction, montant, type, date_transaction, id_categorie, description) => {
+export const updateTransaction = async (id_transaction, montant, date_transaction, id_categorie, description) => {
     try {
         const response = await fetch(`${API_BASE_URL}/index.php?action=updateTransaction`, {
             method: "POST",
@@ -63,7 +60,6 @@ export const updateTransaction = async (id_transaction, montant, type, date_tran
             body: JSON.stringify({
                 id_transaction, 
                 montant, 
-                type, 
                 date: date_transaction,  // Renommé ici
                 id_categorie, 
                 description

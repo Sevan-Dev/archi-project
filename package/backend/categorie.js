@@ -19,3 +19,6 @@ export const getCategorieById = async (id_categorie) => {
        return null;
    }
 };
+
+
+// await getCategorieById(t.id_categorie).then(data => data.type)
