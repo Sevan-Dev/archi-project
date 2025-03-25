@@ -16,20 +16,29 @@ import {
    InputLabel,
    FormControl,
    Button,
+   Dialog,
+   DialogActions,
+   DialogContent,
+   DialogTitle,
+   Menu,
+   IconButton,
    CircularProgress,
-   TablePagination,
 } from "@mui/material";
 import PageContainer from "src/components/container/PageContainer";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
    getTransactionsByUser,
    addTransaction,
    updateTransaction,
    deleteTransaction,
 } from "../../../backend/transactions";
+
 import { getCategories } from "../../../backend/categorie";
+import { getCategorieById } from "../../../backend/categorie.js";
 
 const TransactionPage = () => {
    const navigate = useNavigate();
+
    const [transactions, setTransactions] = useState([]);
    const [categories, setCategories] = useState([]);
    const [loading, setLoading] = useState(true);
@@ -38,10 +47,20 @@ const TransactionPage = () => {
    const [rowsPerPage, setRowsPerPage] = useState(5);
    const [filteredTransactions, setFilteredTransactions] = useState([]);
    const [categoryFilter, setCategoryFilter] = useState("");
-   const [yearFilter, setYearFilter] = useState(""); // Filtre pour l'année
-   const [monthFilter, setMonthFilter] = useState(""); // Filtre pour le mois
+   const [dateFilter, setDateFilter] = useState("");
    const [minAmountFilter, setMinAmountFilter] = useState("");
    const [maxAmountFilter, setMaxAmountFilter] = useState("");
+
+   const [open, setOpen] = useState(false);
+   const [newTransaction, setNewTransaction] = useState({
+      montant: "",
+      date: "",
+      description: "",
+      categorie: "",
+   });
+
+   const [anchorEl, setAnchorEl] = useState(null);
+   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
    const user = JSON.parse(localStorage.getItem("user"));
 
@@ -102,18 +121,11 @@ const TransactionPage = () => {
          );
       }
 
-      if (yearFilter) {
+      if (dateFilter) {
          tempTransactions = tempTransactions.filter(
-            (t) => new Date(t.date_transaction).getFullYear() === parseInt(yearFilter)
+            (t) => t.date_transaction === dateFilter
          );
       }
-
-      if (monthFilter) {
-         tempTransactions = tempTransactions.filter(
-            (t) => new Date(t.date_transaction).getMonth() + 1 === parseInt(monthFilter)
-         );
-      }
-
       if (minAmountFilter) {
          tempTransactions = tempTransactions.filter(
             (t) => t.montant >= parseFloat(minAmountFilter)
@@ -126,31 +138,109 @@ const TransactionPage = () => {
       }
 
       setFilteredTransactions(tempTransactions);
-      setPage(0);  // Reset page to 0 when filter changes
+      setPage(0);
    };
 
    useEffect(() => {
       handleFilterChange();
    }, [
       categoryFilter,
-      yearFilter,
-      monthFilter,
+      dateFilter,
       minAmountFilter,
       maxAmountFilter,
       transactions,
    ]);
 
-   const handleChangePage = (event, newPage) => {
-      setPage(newPage);
+   const handleClickMenu = (event, transaction) => {
+      setAnchorEl(event.currentTarget);
+      setSelectedTransaction(transaction);
    };
 
-   const handleChangeRowsPerPage = (event) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      setPage(0);
+   const handleCloseMenu = () => {
+      setAnchorEl(null);
+      setSelectedTransaction(null);
+   };
+
+   const handleDelete = async () => {
+      if (selectedTransaction) {
+         try {
+            await deleteTransaction(selectedTransaction.id_transaction);
+            fetchTransactions(); // Recharge les transactions après la suppression
+         } catch (error) {
+            console.error(
+               "Erreur lors de la suppression de la transaction :",
+               error
+            );
+         }
+      }
+      handleCloseMenu();
+   };
+
+   const handleEdit = () => {
+      setNewTransaction({
+         id_transaction: selectedTransaction.id_transaction,
+         montant: selectedTransaction.montant,
+         date: selectedTransaction.date_transaction,
+         description: selectedTransaction.description,
+         categorie: selectedTransaction.id_categorie,
+      });
+      setOpen(true);
+      handleCloseMenu();
+   };
+
+   const handleClickOpen = () => {
+      setOpen(true);
+   };
+
+   const handleClose = () => {
+      setOpen(false);
+      setNewTransaction({
+         montant: "",
+         date: "",
+         description: "",
+         categorie: "",
+      });
+   };
+
+   const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      setNewTransaction((prev) => ({ ...prev, [name]: value }));
+   };
+
+   const handleSubmit = async () => {
+      try {
+         if (newTransaction.id_transaction) {
+            await updateTransaction(
+               newTransaction.id_transaction,
+               newTransaction.montant,
+               newTransaction.date,
+               newTransaction.categorie,
+               newTransaction.description
+            );
+         } else {
+            await addTransaction(
+               user.id,
+               newTransaction.montant,
+               newTransaction.date,
+               newTransaction.categorie,
+               newTransaction.description
+            );
+         }
+         fetchTransactions();
+         handleClose();
+      } catch (error) {
+         console.error(
+            "Erreur lors de l'ajout ou de la mise à jour de la transaction :",
+            error
+         );
+      }
    };
 
    return (
-      <PageContainer title="Transactions" description="Tableau des transactions">
+      <PageContainer
+         title="Transactions"
+         description="Tableau des transactions"
+      >
          <Grid container spacing={3}>
             <Grid item xs={12}>
                <Typography variant="h4" gutterBottom>
@@ -159,7 +249,6 @@ const TransactionPage = () => {
             </Grid>
          </Grid>
 
-         {/* Filter controls */}
          <Grid container spacing={3} sx={{ marginTop: 2 }}>
             <Grid item xs={12} sm={3}>
                <FormControl fullWidth sx={{ marginBottom: 2 }}>
@@ -173,7 +262,10 @@ const TransactionPage = () => {
                         Tous
                      </MenuItem>
                      {categories.map((cat) => (
-                        <MenuItem key={cat.id_categorie} value={cat.id_categorie}>
+                        <MenuItem
+                           key={cat.id_categorie}
+                           value={cat.id_categorie}
+                        >
                            {cat.nom}
                         </MenuItem>
                      ))}
@@ -181,71 +273,39 @@ const TransactionPage = () => {
                </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
-               <FormControl fullWidth sx={{ marginBottom: 2 }}>
-                  <InputLabel>Année</InputLabel>
-                  <Select
-                     value={yearFilter}
-                     onChange={(e) => setYearFilter(e.target.value)}
-                     name="year"
-                  >
-                     <MenuItem value="">Toutes</MenuItem>
-                     {/* Liste des années */}
-                     {Array.from(new Set(transactions.map((t) => new Date(t.date_transaction).getFullYear())))
-                        .sort((a, b) => a - b) // Tri des années dans l'ordre croissant
-                        .map((year) => (
-                           <MenuItem key={year} value={year}>
-                              {year}
-                           </MenuItem>
-                        ))}
-                  </Select>
-               </FormControl>
+               <TextField
+                  label="Date"
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+               />
             </Grid>
             <Grid item xs={12} sm={3}>
-               <FormControl fullWidth sx={{ marginBottom: 2 }}>
-                  <InputLabel>Mois</InputLabel>
-                  <Select
-                     value={monthFilter}
-                     onChange={(e) => setMonthFilter(e.target.value)}
-                     name="month"
-                  >
-                     <MenuItem value="">Tous</MenuItem>
-                     {/* Liste des mois */}
-                     {Array.from(new Set(transactions.map((t) => new Date(t.date_transaction).getMonth() + 1)))
-                        .sort((a, b) => a - b) // Tri des mois dans l'ordre croissant
-                        .map((month) => (
-                           <MenuItem key={month} value={month}>
-                              {month}
-                           </MenuItem>
-                        ))}
-                  </Select>
-               </FormControl>
+               <TextField
+                  label="Montant min"
+                  type="number"
+                  value={minAmountFilter}
+                  onChange={(e) => setMinAmountFilter(e.target.value)}
+                  fullWidth
+               />
             </Grid>
-            <Grid container item xs={12} sm={6} spacing={2}>
-               <Grid item xs={6}>
-                  <TextField
-                     label="Montant min"
-                     type="number"
-                     value={minAmountFilter}
-                     onChange={(e) => setMinAmountFilter(e.target.value)}
-                     fullWidth
-                  />
-               </Grid>
-               <Grid item xs={6}>
-                  <TextField
-                     label="Montant max"
-                     type="number"
-                     value={maxAmountFilter}
-                     onChange={(e) => setMaxAmountFilter(e.target.value)}
-                     fullWidth
-                  />
-               </Grid>
+            <Grid item xs={12} sm={3}>
+               <TextField
+                  label="Montant max"
+                  type="number"
+                  value={maxAmountFilter}
+                  onChange={(e) => setMaxAmountFilter(e.target.value)}
+                  fullWidth
+               />
             </Grid>
          </Grid>
 
          <Button
             variant="contained"
             color="primary"
-            onClick={() => setOpen(true)}
+            onClick={handleClickOpen}
             sx={{ marginTop: 2 }}
          >
             Ajouter une transaction
@@ -262,12 +322,18 @@ const TransactionPage = () => {
                         <TableCell sx={{ color: "white" }}>Type</TableCell>
                         <TableCell sx={{ color: "white" }}>Catégorie</TableCell>
                         <TableCell sx={{ color: "white" }}>Date</TableCell>
-                        <TableCell sx={{ color: "white" }}>Description</TableCell>
+                        <TableCell sx={{ color: "white" }}>
+                           Description
+                        </TableCell>
+                        <TableCell sx={{ color: "white" }} />
                      </TableRow>
                   </TableHead>
                   <TableBody>
                      {filteredTransactions
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .slice(
+                           page * rowsPerPage,
+                           page * rowsPerPage + rowsPerPage
+                        )
                         .map((t) => (
                            <TableRow key={t.id_transaction}>
                               <TableCell>{t.montant} €</TableCell>
@@ -275,21 +341,98 @@ const TransactionPage = () => {
                               <TableCell>{t.categorie}</TableCell>
                               <TableCell>{t.date_transaction}</TableCell>
                               <TableCell>{t.description}</TableCell>
+                              <TableCell>
+                                 <IconButton
+                                    onClick={(e) => handleClickMenu(e, t)}
+                                 >
+                                    <MoreVertIcon />
+                                 </IconButton>
+                                 <Menu
+                                    anchorEl={anchorEl}
+                                    open={
+                                       Boolean(anchorEl) &&
+                                       selectedTransaction === t
+                                    }
+                                    onClose={handleCloseMenu}
+                                 >
+                                    <MenuItem onClick={handleEdit}>
+                                       Modifier
+                                    </MenuItem>
+                                    <MenuItem onClick={handleDelete}>
+                                       Supprimer
+                                    </MenuItem>
+                                 </Menu>
+                              </TableCell>
                            </TableRow>
                         ))}
                   </TableBody>
                </Table>
-               <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={filteredTransactions.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-               />
             </TableContainer>
          )}
+
+         <Dialog open={open} onClose={handleClose}>
+            <DialogTitle>
+               {newTransaction.id_transaction
+                  ? "Modifier la transaction"
+                  : "Ajouter une transaction"}
+            </DialogTitle>
+            <DialogContent>
+               <TextField
+                  label="Montant"
+                  type="number"
+                  name="montant"
+                  value={newTransaction.montant}
+                  onChange={handleInputChange}
+                  fullWidth
+                  sx={{ marginBottom: 2 }}
+               />
+               <TextField
+                  label="Date"
+                  type="date"
+                  name="date"
+                  value={newTransaction.date}
+                  onChange={handleInputChange}
+                  fullWidth
+                  sx={{ marginBottom: 2 }}
+                  InputLabelProps={{ shrink: true }}
+               />
+               <TextField
+                  label="Description"
+                  name="description"
+                  value={newTransaction.description}
+                  onChange={handleInputChange}
+                  fullWidth
+                  sx={{ marginBottom: 2 }}
+               />
+               <FormControl fullWidth sx={{ marginBottom: 2 }}>
+                  <InputLabel>Catégorie</InputLabel>
+                  <Select
+                     value={newTransaction.categorie}
+                     name="categorie"
+                     onChange={handleInputChange}
+                  >
+                     {categories.map((cat) => (
+                        <MenuItem
+                           key={cat.id_categorie}
+                           value={cat.id_categorie}
+                        >
+                           {cat.nom}
+                        </MenuItem>
+                     ))}
+                  </Select>
+               </FormControl>
+            </DialogContent>
+            <DialogActions>
+               <Button onClick={handleClose}>Annuler</Button>
+               <Button
+                  onClick={handleSubmit}
+                  variant="contained"
+                  color="primary"
+               >
+                  {newTransaction.id_transaction ? "Modifier" : "Ajouter"}
+               </Button>
+            </DialogActions>
+         </Dialog>
       </PageContainer>
    );
 };

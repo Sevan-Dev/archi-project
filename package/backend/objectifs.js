@@ -51,14 +51,26 @@ export const addObjectif = async (id_utilisateur, nom_objectif, montant_cible, d
 };
 
 // Mettre à jour un objectif financier
-export const updateObjectif = async (id_objectif, nom_objectif, montant_cible, montant_actuel, date_limite) => {
+export const updateObjectif = async ( id_objectif, nom_objectif, montant_cible, montant_actuel, date_limite) => {
   const data = { id_objectif, nom_objectif, montant_cible, montant_actuel, date_limite };
   return await postRequest('/?action=updateObjectif', data);
 };
 
-// Supprimer un objectif financier
+// Supprimer un objectif financier avec GET
 export const deleteObjectif = async (id_objectif) => {
-  const data = { id_objectif };
-  return await postRequest('/?action=deleteObjectif', data);
-};
+  try {
+    const response = await fetch(`${API_BASE_URL}/index.php?action=deleteObjectif&id_objectif=${id_objectif}`, {
+      method: 'GET',
+    });
 
+    if (!response.ok) {
+      throw new Error('Erreur lors de la suppression de l\'objectif');
+    }
+
+    const result = await response.json();
+    return result; // Retourne le résultat de la suppression
+  } catch (error) {
+    console.error("Erreur lors de la suppression de l'objectif :", error);
+    return { error: error.message };
+  }
+};
