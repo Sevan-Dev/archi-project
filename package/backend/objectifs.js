@@ -15,13 +15,19 @@ const postRequest = async (url, data) => {
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
 
-    const result = await response.json();
-    return result;
+    // Vérifier si la réponse contient du JSON valide
+    const result = await response.text(); // Utiliser .text() pour récupérer la réponse brute
+    try {
+      return JSON.parse(result); // Essayer de parser la réponse en JSON
+    } catch (error) {
+      throw new Error('Réponse du serveur non JSON : ' + result); // Gérer les erreurs de parsing
+    }
   } catch (error) {
     console.error(`Erreur lors de la requête POST à ${url}:`, error);
     return { error: error.message };
   }
 };
+
 
 // Récupérer les objectifs financiers d'un utilisateur
 export const getObjectifsByUser = async (id_utilisateur) => {
@@ -55,3 +61,4 @@ export const deleteObjectif = async (id_objectif) => {
   const data = { id_objectif };
   return await postRequest('/?action=deleteObjectif', data);
 };
+

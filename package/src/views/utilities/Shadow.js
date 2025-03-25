@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, Typography, LinearProgress, Box, Grid, Avatar, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { AttachMoney, CarRepair, FlightTakeoff } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import { getObjectifsByUser, addObjectif, deleteObjectif, updateObjectif } from '../../../backend/objectifs'; // Assurez-vous de bien importer
 import { useNavigate } from 'react-router-dom';
 
@@ -9,11 +8,6 @@ const FinancialGoalCard = ({ goal, onDelete, onEdit }) => {
   const progress = (goal.montant_actuel / goal.montant_cible) * 100;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-    >
       <Card sx={{ maxWidth: 345, marginBottom: 2, boxShadow: 3, borderRadius: 2 }}>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
@@ -49,7 +43,6 @@ const FinancialGoalCard = ({ goal, onDelete, onEdit }) => {
           </Box>
         </CardContent>
       </Card>
-    </motion.div>
   );
 };
 
@@ -102,21 +95,30 @@ const FinancialGoalsPage = () => {
   };
 
   const handleEditGoal = async () => {
+    console.log('Editing goal with form data:', formData);
     const result = await updateObjectif(editingGoal.id_objectif, formData.nom_objectif, formData.montant_cible, formData.montant_actuel, formData.date_limite);
+    console.log('Update result:', result);
     if (!result.error) {
       setOpenDialog(false);
       setEditingGoal(null);
       setFormData({ nom_objectif: '', montant_cible: '', montant_actuel: 0, date_limite: '' });
       setGoals(await getObjectifsByUser(userId));
+    } else {
+      console.error('Error updating goal:', result.error);
     }
   };
-
+  
   const handleDeleteGoal = async (id) => {
+    console.log('Deleting goal with ID:', id);
     const result = await deleteObjectif(id);
+    console.log('Delete result:', result);
     if (!result.error) {
       setGoals(await getObjectifsByUser(userId));
+    } else {
+      console.error('Error deleting goal:', result.error);
     }
   };
+  
 
   const openAddDialog = () => {
     setOpenDialog(true);
@@ -135,6 +137,7 @@ const FinancialGoalsPage = () => {
     });
   };
 
+  
   return (
     <>
       <Button variant="contained" color="primary" onClick={openAddDialog} sx={{ marginBottom: 3 }}>

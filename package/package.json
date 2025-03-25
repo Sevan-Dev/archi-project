@@ -20,7 +20,6 @@
     "@svgr/rollup": "^8.1.0",
     "@tabler/icons-react": "^2.35.0",
     "apexcharts": "^4.4.0",
-    "framer-motion": "^12.5.0",
     "lodash": "^4.17.21",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",

@@ -1,25 +1,26 @@
-import React from 'react';
-import { Select, MenuItem } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import DashboardCard from '../../../components/shared/DashboardCard';
 import Chart from 'react-apexcharts';
+import { getTransactionsByYear } from '../../../../backend/transactions.js'; // Fonction à appeler
 
+const SalesOverview = ({ id_utilisateur }) => {
+    // State
+    const [year, setYear] = useState('2025'); // Année par défaut
+    const [revenus, setRevenus] = useState([]);
+    const [depenses, setDepenses] = useState([]);
 
-const SalesOverview = () => {
-
-    // select
-    const [month, setMonth] = React.useState('1');
-
-    const handleChange = (event) => {
-        setMonth(event.target.value);
+    const handleYearChange = (event) => {
+        setYear(event.target.value);  // Met à jour l'année
     };
 
-    // chart color
+    // Chart colors
     const theme = useTheme();
     const primary = theme.palette.primary.main;
     const secondary = theme.palette.secondary.main;
 
-    // chart
+    // Chart options
     const optionscolumnchart = {
         chart: {
             type: 'bar',
@@ -47,7 +48,7 @@ const SalesOverview = () => {
             width: 5,
             lineCap: "butt",
             colors: ["transparent"],
-          },
+        },
         dataLabels: {
             enabled: false,
         },
@@ -67,7 +68,10 @@ const SalesOverview = () => {
             tickAmount: 4,
         },
         xaxis: {
-            categories: ['16/08', '17/08', '18/08', '19/08', '20/08', '21/08', '22/08', '23/08'],
+            categories: [
+                'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+            ],
             axisBorder: {
                 show: false,
             },
@@ -77,31 +81,60 @@ const SalesOverview = () => {
             fillSeriesColor: false,
         },
     };
+
+    // Utilisation de la fonction getTransactionsByYear dans useEffect
+    useEffect(() => {
+        const fetchTransactions = async () => {
+            const { revenus, depenses } = await getTransactionsByYear(id_utilisateur, year);
+
+            // Vérification que les données sont valides
+            if (Array.isArray(revenus) && Array.isArray(depenses)) {
+                setRevenus(revenus);
+                setDepenses(depenses);
+            } else {
+                console.error("Les données des transactions sont invalides.");
+            }
+        };
+
+        fetchTransactions();
+    }, [year, id_utilisateur]);  // Rechargement des données lorsque l'année change
+
+    // Data pour le graphique
     const seriescolumnchart = [
         {
             name: 'Revenus ce mois-ci',
-            data: [355, 390, 300, 350, 390, 180, 355, 390],
+            data: revenus,
         },
         {
             name: 'Dépenses ce mois-ci',
-            data: [280, 250, 325, 215, 250, 310, 280, 250],
+            data: depenses,
         },
     ];
 
-    return (
+    // Générer des années dynamiques
+    const years = [];
+    for (let i = 2020; i <= 2025; i++) {
+        years.push(i);
+    }
 
-        <DashboardCard title="Revenus / Dépenses Mensuels" action={
-            <Select
-                labelId="month-dd"
-                id="month-dd"
-                value={month}
-                size="small"
-                onChange={handleChange}
-            >
-                <MenuItem value={1}>March 2025</MenuItem>
-                <MenuItem value={2}>April 2025</MenuItem>
-                <MenuItem value={3}>May 2025</MenuItem>
-            </Select>
+    return (
+        <DashboardCard title="Revenus / Dépenses Annuels" action={
+            <FormControl sx={{ minWidth: 120 }}>
+                <InputLabel id="year-select-label">Année</InputLabel>
+                <Select
+                    labelId="year-select-label"
+                    id="year-select"
+                    value={year}
+                    onChange={handleYearChange}
+                    size="small"
+                >
+                    {years.map((yearOption) => (
+                        <MenuItem key={yearOption} value={yearOption}>
+                            {yearOption}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
         }>
             <Chart
                 options={optionscolumnchart}
