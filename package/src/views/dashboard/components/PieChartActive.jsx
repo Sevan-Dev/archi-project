@@ -62,7 +62,7 @@ export default function PieActiveArc({ id_utilisateur }) {
             faded: { innerRadius: 30, additionalRadius: -30, color: "blue" },
           },
         ]}
-        height={400}
+        height={450}
       />
     </DashboardCard>
   );
@@ -71,12 +71,12 @@ export default function PieActiveArc({ id_utilisateur }) {
 // Exemple de fonction pour obtenir une couleur en fonction de l'ID de catégorie
 const getCategoryColorById = (id_categorie) => {
   const colors = {
-    1: "#1976d2", // Exemple : Revenus = Bleu
-    2: "#9c27b0", // Dépenses fixes = Violet
-    3: "#388e3c", // Dépenses variables = Vert
-    4: "#d32f2f", // Investissements = Rouge
-    5: "#fbc02d", // Épargne = Jaune
-    // Ajouter d'autres couleurs si nécessaire
+    1: "#C870FF",
+    2: "#B470FF", 
+    3: "#A070FF",
+    4: "#8C70FF",
+    5: "#7070FF",
+    6: "#5D87FF",
   };
-  return colors[id_categorie] || "#000000"; // Par défaut, noir
+  return colors[id_categorie] || "#878787"; // Par défaut, noir
 };

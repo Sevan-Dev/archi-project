@@ -20,17 +20,13 @@ const MonthlyEarnings = ({ id_utilisateur }) => {
   }, [id_utilisateur]);
 
   return (
-    <DashboardCard
-      title="Solde actuel"
-      action={
-        <Fab color="secondary" size="medium" sx={{ color: '#ffffff' }}>
-          <IconCurrencyDollar width={24} />
-        </Fab>
-      }
-    >
+    <DashboardCard>
       <>
+        <Typography variant="h6" fontWeight="200">
+        Solde actuel :
+        </Typography>
         <Typography variant="h3" fontWeight="700">
-          {solde.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+        {solde.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
         </Typography>
       </>
     </DashboardCard>

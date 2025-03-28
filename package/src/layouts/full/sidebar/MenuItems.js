@@ -85,9 +85,9 @@ const Menuitems = [
   },
   {
     id: uniqueId(),
-    title: 'Shadow',
+    title: 'Objectifs',
     icon: IconCopy,
-    href: '/ui/shadow',
+    href: '/ui/Shadow',
   },
 
   
