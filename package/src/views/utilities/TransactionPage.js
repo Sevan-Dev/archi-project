@@ -23,6 +23,7 @@ import {
    Menu,
    IconButton,
    CircularProgress,
+   TablePagination,
 } from "@mui/material";
 import PageContainer from "src/components/container/PageContainer";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -34,7 +35,6 @@ import {
 } from "../../../backend/transactions";
 
 import { getCategories } from "../../../backend/categorie";
-import { getCategorieById } from "../../../backend/categorie.js";
 
 const TransactionPage = () => {
    const navigate = useNavigate();
@@ -138,7 +138,7 @@ const TransactionPage = () => {
       }
 
       setFilteredTransactions(tempTransactions);
-      setPage(0);
+      setPage(0); // Reset to the first page when filters are applied
    };
 
    useEffect(() => {
@@ -236,11 +236,19 @@ const TransactionPage = () => {
       }
    };
 
+   // Handle page change for pagination
+   const handleChangePage = (event, newPage) => {
+      setPage(newPage);
+   };
+
+   // Handle rows per page change
+   const handleChangeRowsPerPage = (event) => {
+      setRowsPerPage(parseInt(event.target.value, 10));
+      setPage(0); // Reset to first page when rows per page change
+   };
+
    return (
-      <PageContainer
-         title="Transactions"
-         description="Tableau des transactions"
-      >
+      <PageContainer title="Transactions" description="Tableau des transactions">
          <Grid container spacing={3}>
             <Grid item xs={12}>
                <Typography variant="h4" gutterBottom>
@@ -262,10 +270,7 @@ const TransactionPage = () => {
                         Tous
                      </MenuItem>
                      {categories.map((cat) => (
-                        <MenuItem
-                           key={cat.id_categorie}
-                           value={cat.id_categorie}
-                        >
+                        <MenuItem key={cat.id_categorie} value={cat.id_categorie}>
                            {cat.nom}
                         </MenuItem>
                      ))}
@@ -322,18 +327,13 @@ const TransactionPage = () => {
                         <TableCell sx={{ color: "white" }}>Type</TableCell>
                         <TableCell sx={{ color: "white" }}>Catégorie</TableCell>
                         <TableCell sx={{ color: "white" }}>Date</TableCell>
-                        <TableCell sx={{ color: "white" }}>
-                           Description
-                        </TableCell>
+                        <TableCell sx={{ color: "white" }}>Description</TableCell>
                         <TableCell sx={{ color: "white" }} />
                      </TableRow>
                   </TableHead>
                   <TableBody>
                      {filteredTransactions
-                        .slice(
-                           page * rowsPerPage,
-                           page * rowsPerPage + rowsPerPage
-                        )
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                         .map((t) => (
                            <TableRow key={t.id_transaction}>
                               <TableCell>{t.montant} €</TableCell>
@@ -342,34 +342,35 @@ const TransactionPage = () => {
                               <TableCell>{t.date_transaction}</TableCell>
                               <TableCell>{t.description}</TableCell>
                               <TableCell>
-                                 <IconButton
-                                    onClick={(e) => handleClickMenu(e, t)}
-                                 >
+                                 <IconButton onClick={(e) => handleClickMenu(e, t)}>
                                     <MoreVertIcon />
                                  </IconButton>
                                  <Menu
                                     anchorEl={anchorEl}
-                                    open={
-                                       Boolean(anchorEl) &&
-                                       selectedTransaction === t
-                                    }
+                                    open={Boolean(anchorEl) && selectedTransaction === t}
                                     onClose={handleCloseMenu}
                                  >
-                                    <MenuItem onClick={handleEdit}>
-                                       Modifier
-                                    </MenuItem>
-                                    <MenuItem onClick={handleDelete}>
-                                       Supprimer
-                                    </MenuItem>
+                                    <MenuItem onClick={handleEdit}>Modifier</MenuItem>
+                                    <MenuItem onClick={handleDelete}>Supprimer</MenuItem>
                                  </Menu>
                               </TableCell>
                            </TableRow>
                         ))}
                   </TableBody>
                </Table>
+               <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={filteredTransactions.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+               />
             </TableContainer>
          )}
 
+         {/* Dialog for adding/editing transactions */}
          <Dialog open={open} onClose={handleClose}>
             <DialogTitle>
                {newTransaction.id_transaction
@@ -412,10 +413,7 @@ const TransactionPage = () => {
                      onChange={handleInputChange}
                   >
                      {categories.map((cat) => (
-                        <MenuItem
-                           key={cat.id_categorie}
-                           value={cat.id_categorie}
-                        >
+                        <MenuItem key={cat.id_categorie} value={cat.id_categorie}>
                            {cat.nom}
                         </MenuItem>
                      ))}
@@ -424,11 +422,7 @@ const TransactionPage = () => {
             </DialogContent>
             <DialogActions>
                <Button onClick={handleClose}>Annuler</Button>
-               <Button
-                  onClick={handleSubmit}
-                  variant="contained"
-                  color="primary"
-               >
+               <Button onClick={handleSubmit} variant="contained" color="primary">
                   {newTransaction.id_transaction ? "Modifier" : "Ajouter"}
                </Button>
             </DialogActions>
