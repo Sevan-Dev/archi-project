@@ -44,17 +44,30 @@ class ObjectifAdapter {
     }
 
     // Mettre à jour un objectif financier
-    public function updateObjectif($id_objectif, $nom_objectif, $montant_cible, $montant_actuel, $date_limite) {
+    public function updateObjectif($id_objectif, $nom_objectif, $montant_cible, $date_limite) {
         try {
             $sql = "UPDATE ObjectifFinancier 
-                    SET nom_objectif = ?, montant_cible = ?, montant_actuel = ?, date_limite = ? 
+                    SET nom_objectif = ?, montant_cible = ?, date_limite = ? 
                     WHERE id_objectif = ?";
             $stmt = $this->db->prepare($sql);
-            return $stmt->execute([$nom_objectif, $montant_cible, $montant_actuel, $date_limite, $id_objectif]);
+            return $stmt->execute([$nom_objectif, $montant_cible, $date_limite, $id_objectif]);
         } catch (PDOException $e) {
             return ["error" => "Erreur lors de la mise à jour de l'objectif : " . $e->getMessage()];
         }
     }
+
+        // Mettre à jour un montant d'un objectif financier
+        public function updateObjectifAmount($id_objectif, $montant_actuel) {
+            try {
+                $sql = "UPDATE ObjectifFinancier 
+                        SET montant_actuel = ?
+                        WHERE id_objectif = ?";
+                $stmt = $this->db->prepare($sql);
+                return $stmt->execute([$montant_actuel, $id_objectif]);
+            } catch (PDOException $e) {
+                return ["error" => "Erreur lors de la mise à jour de l'objectif : " . $e->getMessage()];
+            }
+        }
 
     // Supprimer un objectif financier
     public function deleteObjectif($id_objectif) {

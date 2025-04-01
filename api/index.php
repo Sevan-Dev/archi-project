@@ -1,6 +1,6 @@
 <?php
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json');
 
@@ -12,14 +12,17 @@ require_once 'TransactionAdapter.php';
 require_once 'BudgetAdapter.php';
 require_once 'ObjectifAdapter.php';
 require_once 'UserAdapter.php';
+require_once 'CategorieAdapter.php';
 
 $userAdapter = new UserAdapter();
 $transactionAdapter = new TransactionAdapter();
 $budgetAdapter = new BudgetAdapter();
 $objectifAdapter = new ObjectifAdapter();
+$categorieAdapter = new CategorieAdapter();
 
 if (isset($_GET['action'])) {
     $action = $_GET['action'];
+
 
     switch ($action) {
         // AUTHENTIFICATION
@@ -55,18 +58,36 @@ if (isset($_GET['action'])) {
 
         case 'addTransaction':
             $data = json_decode(file_get_contents('php://input'), true);
-            if (isset($data['id_utilisateur'], $data['montant'], $data['type'], $data['id_categorie'], $data['description'], $data['date_transaction'])) {
-                $result = $transactionAdapter->addTransaction(
-                    $data['id_utilisateur'],
-                    $data['montant'],
-                    $data['type'],
-                    $data['id_categorie'],
-                    $data['description'],
-                    $data['date_transaction']
-                );
-                echo json_encode(['status' => $result ? 'success' : 'error']);
+            if (isset($data['id_utilisateur'], $data['montant'], $data['id_categorie'], $data['description'], $data['date'])) {
+                try {
+                    $result = $transactionAdapter->addTransaction(
+                        $data['id_utilisateur'],
+                        $data['montant'],
+                        $data['id_categorie'],
+                        $data['description'],
+                        $data['date']
+                    );
+
+                    // Vérification du succès et renvoi de la réponse JSON
+                    if ($result) {
+                        echo json_encode(['status' => 'success']);
+                    } else {
+                        echo json_encode(['status' => 'error', 'message' => 'Failed to insert transaction']);
+                    }
+                    exit;
+                } catch (Exception $e) {
+                    // Si une erreur se produit lors de l'exécution de la requête, renvoyer une erreur en JSON
+                    echo json_encode(["error" => "Erreur lors de l'ajout de la transaction : " . $e->getMessage()]);
+                    exit;
+                }
+            } else {
+                echo json_encode(["error" => "Données manquantes pour l'ajout de la transaction"]);
+                exit;
             }
             break;
+
+
+
 
         case 'deleteTransaction':
             if (isset($_GET['id_transaction'])) {
@@ -77,16 +98,45 @@ if (isset($_GET['action'])) {
 
         case 'updateTransaction':
             $data = json_decode(file_get_contents('php://input'), true);
-            if (isset($data['id_transaction'], $data['montant'], $data['type'], $data['id_categorie'], $data['description'], $data['date_transaction'])) {
-                $result = $transactionAdapter->updateTransaction(
-                    $data['id_transaction'],
-                    $data['montant'],
-                    $data['type'],
-                    $data['id_categorie'],
-                    $data['description'],
-                    $data['date_transaction']
-                );
-                echo json_encode(['status' => $result ? 'success' : 'error']);
+            if (isset($data['id_transaction'], $data['montant'], $data['id_categorie'], $data['description'], $data['date'])) {
+                try {
+                    $result = $transactionAdapter->updateTransaction(
+                        $data['id_transaction'],
+                        $data['montant'],
+                        $data['id_categorie'],
+                        $data['description'],
+                        $data['date']
+                    );
+
+                    if ($result) {
+                        echo json_encode(['status' => 'success']);
+                    } else {
+                        echo json_encode(['status' => 'error', 'message' => 'Failed to insert transaction']);
+                    }
+                    exit;
+                } catch (Exception $e) {
+                    // Si une erreur se produit lors de l'exécution de la requête, renvoyer une erreur en JSON
+                    echo json_encode(["error" => "Erreur lors de l'ajout de la transaction : " . $e->getMessage()]);
+                    exit;
+                }
+            } else {
+                echo json_encode(["error" => "Données manquantes pour l'ajout de la transaction"]);
+                exit;
+            }
+            break;
+
+        // CATEGORIES (Ajout des actions pour les catégories)
+        case 'getCategories':
+            // Récupérer toutes les catégories
+            echo json_encode($categorieAdapter->getCategories());
+            break;
+
+        case 'getCategorieById':
+            if (isset($_GET['id_categorie'])) {
+                // Récupérer une catégorie par son ID
+                echo json_encode($categorieAdapter->getCategorieById($_GET['id_categorie']));
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'ID de catégorie manquant']);
             }
             break;
 
@@ -137,10 +187,10 @@ if (isset($_GET['action'])) {
 
         case 'updateObjectif':
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $data = json_decode(file_get_contents('php://input'), true);
-            if (isset($data['id_objectif'], $data['nom_objectif'], $data['montant_cible'], $data['montant_actuel'], $data['date_limite'])) {
-                $result = $objectifAdapter->updateObjectif($data['id_objectif'], $data['nom_objectif'], $data['montant_cible'], $data['montant_actuel'], $data['date_limite']);
-                echo json_encode(['status' => $result ? 'success' : 'error']);
+                $data = json_decode(file_get_contents('php://input'), true);
+                if (isset($data['id_objectif'], $data['nom_objectif'], $data['montant_cible'], $data['date_limite'])) {
+                    $result = $objectifAdapter->updateObjectif($data['id_objectif'], $data['nom_objectif'], $data['montant_cible'], $data['date_limite']);
+                    echo json_encode(['status' => $result ? 'success' : 'error']);
                 } else {
                     echo json_encode(['status' => 'error', 'message' => 'Paramètres manquants']);
                 }
@@ -148,17 +198,28 @@ if (isset($_GET['action'])) {
                 echo json_encode(['status' => 'error', 'message' => 'Utilisez une requête POST pour l’inscription']);
             }
             break;
+        
+
+            case 'updateObjectifAmount':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $data = json_decode(file_get_contents('php://input'), true);
+                    if (isset($data['id_objectif'], $data['montant_actuel'])) {
+                        $result = $objectifAdapter->updateObjectifAmount($data['id_objectif'], $data['montant_actuel']);
+                        echo json_encode(['status' => $result ? 'success' : 'error']);
+                    } else {
+                        echo json_encode(['status' => 'error', 'message' => 'Paramètres manquants']);
+                    }
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Utilisez une requête POST pour l’inscription']);
+                }
+                break;
 
         case 'deleteObjectif':
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_GET['id_objectif'])) {
                 $result = $objectifAdapter->deleteObjectif($_GET['id_objectif']);
                 echo json_encode(['status' => $result ? 'success' : 'error']);
-                } else {
-                    echo json_encode(['status' => 'error', 'message' => 'Paramètres manquants']);
-                }
             } else {
-                echo json_encode(['status' => 'error', 'message' => 'Utilisez une requête POST pour l’inscription']);
+                echo json_encode(['status' => 'error', 'message' => 'Paramètres manquants']);
             }
             break;
 

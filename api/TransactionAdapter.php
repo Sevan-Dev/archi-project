@@ -36,32 +36,30 @@ class TransactionAdapter
     }
 
     // Ajouter une transaction
-    public function addTransaction($id_utilisateur, $montant, $type, $id_categorie, $description, $date_transaction)
+    public function addTransaction($id_utilisateur, $montant, $id_categorie, $description, $date_transaction)
     {
         try {
-            $sql = "INSERT INTO Transaction (id_utilisateur, montant, type, date_transaction, id_categorie, description) 
-                    VALUES (?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO Transaction (id_utilisateur, montant, date_transaction, id_categorie, description) 
+                    VALUES (?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([$id_utilisateur, $montant, $type, $date_transaction, $id_categorie, $description]);
+            $stmt->execute([$id_utilisateur, $montant, $date_transaction, $id_categorie, $description]);
     
-            return true;  // Indique que l'insertion a réussi
+            return true; 
         } catch (PDOException $e) {
-            // Renvoyer un message d'erreur JSON en cas d'échec
             echo json_encode(["error" => "Erreur lors de l'ajout de la transaction : " . $e->getMessage()]);
-            exit; // Assurez-vous d'arrêter l'exécution pour éviter une réponse vide
+            exit;
         }
     }
     
     
 
     // Mettre à jour une transaction
-    public function updateTransaction($id_transaction, $montant, $type, $id_categorie, $description, $date_transaction)
+    public function updateTransaction($id_transaction, $montant, $id_categorie, $description, $date_transaction)
     {
         try {
-            $sql = "UPDATE Transaction SET montant = ?, type = ?, date_transaction = ?, id_categorie = ?, description = ? 
-                    WHERE id_transaction = ?";
+            $sql = "UPDATE Transaction SET montant = ?, date_transaction = ?, id_categorie = ?, description = ? WHERE id_transaction = ?";
             $stmt = $this->db->prepare($sql);
-            return $stmt->execute([$montant, $type, $date_transaction, $id_categorie, $description, $id_transaction]);
+            return $stmt->execute([$montant, $date_transaction, $id_categorie, $description, $id_transaction]);
         } catch (PDOException $e) {
             return ["error" => "Erreur lors de la mise à jour de la transaction : " . $e->getMessage()];
         }
